@@ -157,10 +157,10 @@ protected:
 
 Let me stop here for a moment a let me tell you some basic criterias that I have considered to define this class:
 
-#. Do I need to have the class Stock?
+1. Do I need to have the class Stock?
 No, I don't, but having the Stock class will allow me in the future the possibility to add stock methods or attributes that I couldn't considered at the beginning. The user will be able to create just stock options (instead options against any kind of instrument), sometimes, we have to define user´s limitation, but we have to consider these things meanwhile we are defining our models.
 
-#. Do I need to have a base option class or I can use a simple property that determines if the option is a put or call?
+2. Do I need to have a base option class or I can use a simple property that determines if the option is a put or call?
 In this first touch, we are just implementing vanilla put and call options, so, we can add a class attribute that tells if the instance is a put or a call, and then adding some case logic we can implement each option´s method.
 For example, the method _isITM_ could be implemented in the following way:
 
