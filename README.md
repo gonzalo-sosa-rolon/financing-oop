@@ -2,6 +2,8 @@
 
 The idea of this article is to introduce some C++ design patterns using finance concepts. We assume that the reader has knowledge about finance derivatives (bonds, stocks, options, trading strategies) and experience developing in C++ and he want to improve its designing skills.
 
+This article will contain a lot of questions and answers that will guide to the reader to understand how we think when we are dealing with object programming.
+
 # Object oriented programming paradigm
 
 Object oriented programming is a programming paradigm where we design our software through objects whose interact between themselves, define functionality and provide the information that we need in our application.
@@ -33,7 +35,7 @@ class Stock:
 
 As we can imagine, in the Stock fields we will store the different properties of each object, and we will be able to calculate the spread of the each stock through the method getSpread.
 
-Defining our first classes
+# Defining our first classes
 
 We will start defining simple classes that represent stocks and vanilla put/call options. Let us define a base class called Instrument which contains all the shared attributes for any kind of instrument:
 
@@ -114,12 +116,11 @@ Stock::Stock(const std::string &name, const float &closeValue, const float &ask,
 
 ```
 
-As we can see the class Stock has the same fields and attributes as its parent class (Instrument), in this kind of cases we have to ask ourselves if it worths to have this new class instead of just using the class Instrument to represent stocks. 
-
-This question will be answered later.
+As we can see the class Stock has the same fields and attributes as its parent class (Instrument), in this kind of cases we have to ask ourselves if it worths to have this new class instead of just using the class Instrument to represent stocks, this question will be answered later.
 
 Now, we will implement a base option class which inherits from Instrument and contains the extra fields strike, stock and maturity.
-It also will contain four new abstract methods (isATM, isITM, isOTM, getIntrinsicValue) that will be implemented in each child class.
+
+It also will contain five new methods (isATM, isITM, isOTM, getIntrinsicValue, canExercise) that will be implemented in each child class.
 
 ```C++
 #include "Instrument.h"
@@ -130,15 +131,86 @@ public:
 	Option(const float strike, const Stock*& stock, const long int& maturity, const std::string &name, const float &closeValue, const float &ask, const float &bid,
 			   const float &variance, const long int &timestamp);
 
-	virtual bool isATM() const = 0;
+	virtual bool isATM() const {
+		return this->_strike == this->_stock->getAsk();
+	}
+	
+	// american options
+	virtual bool canExercise(const long int &currentTime) {
+		return currentTime < this->_maturity;
+	}
+	
+	virtual bool isOTM() const {
+		return !this->isITM() && !this->isATM();
+	}
+	
 	virtual bool isITM() const = 0;
-	virtual bool isOTM() const = 0;
 	virtual bool getIntrinsicValue() const = 0;
 	
-	// new class getters y setters
+	// new class's getters y setters
 protected:
 	float _strike;
 	Stock* _stock;
 	long int _maturity;
 };
 ```
+
+Let me stop here for a moment a let me tell you some basic criterias that I have considered to define this class:
+
+#. Do I need to have the class Stock?
+No, I don't, but having the Stock class will allow me in the future the possibility to add stock methods or attributes that I couldn't considered at the beginning. The user will be able to create just stock options (instead options against any kind of instrument), sometimes, we have to define user´s limitation, but we have to consider these things meanwhile we are defining our models.
+
+#. Do I need to have a base option class or I can use a simple property that determines if the option is a put or call?
+In this first touch, we are just implementing vanilla put and call options, so, we can add a class attribute that tells if the instance is a put or a call, and then adding some case logic we can implement each option´s method.
+For example, the method _isITM_ could be implemented in the following way:
+
+```C++
+	
+	// isCall : true when the option is a call option, false when the option is a put option.
+	bool isITM() const {
+		bool result = this->stock->getAsk() > this->_strike;
+		
+		if (!this->isCall) {
+			result = !result;
+		}
+		
+		return result;
+	}
+
+```
+
+But then if we add new option classes (barriers for example) we will have to reimplement our base methods, and even worst
+we may need to change our interfaces to provide to the user new constructors for new kind of options creating a mess in both sides of the project (client/server). The same problem occurs when we are implementing the method _canExercise_ and we have to deal with different kind of options, in this case american, europeans, bermudians, etc..
+
+Well, let's finish our first classes. Now, using this base option class we inherit to have the put option and the call option classes.
+
+```C++
+// CallOption.h
+#include "Instrument.h"
+#include "Stock.h"
+
+class CallOption: public Option {
+public:
+	// these methods are not longer abstracts
+	virtual bool isITM() const;
+	virtual bool getIntrinsicValue() const;
+}
+
+// CallOption.cpp
+
+bool CallOption::isITM() {
+	return this->_stock->getAsk() > this->_strike;	
+}
+
+bool CallOption::getIntrinsicValue() {
+	float result = 0.0;
+	
+	if (this->isITM()) {
+		result = this->_stock->getAsk() - this->_strike;
+	}
+	
+	return result;
+}
+```
+
+I let you to implement the class _PutOption_ and think how can we implement using this classes a class for european options.
