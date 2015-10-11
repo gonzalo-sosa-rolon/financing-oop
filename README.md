@@ -163,7 +163,7 @@ In this case, the BaseOption class has a Stock pointer instead of having a point
 2. Do we need to have a base option class or I can use a simple property that determines if the option is a put or call?
 
 In this first touch, we are just implementing vanilla put and call options, so, we can add a class attribute that tells if the instance is a put or a call, and then adding some case logic we can implement each option´s method.
-For example, the method _isITM_ could be implemented in the following way:
+For example, the method __isITM__ could be implemented in the following way:
 
 ```C++
 	
@@ -181,7 +181,7 @@ For example, the method _isITM_ could be implemented in the following way:
 ```
 
 But then if we add new option classes (barriers for example) we will have to reimplement our base methods, and even worst
-we may need to change our interfaces to provide to the user new constructors for the new kind of options creating a mess in both sides of the project (client/server). The same problem occurs when we are implementing the method _canExercise_ and we have to deal with different types of options such us american, europeans, bermudians, etc..
+we may need to change our interfaces to provide to the user new constructors for the new kind of options creating a mess in both sides of the project (client/server). The same problem occurs when we are implementing the method __canExercise__ and we have to deal with different types of options such us american, europeans, bermudians, etc..
 
 Let's finish our first classes. Now, using this base option class we inherit to have the put option and the call option classes.
 
@@ -216,4 +216,4 @@ bool CallOption::getIntrinsicValue() {
 
 Implementing the class *PutOption* should be easy using these classes, I will not add that class here, but think just for a moment and the solution will come to your mind =).
 
-*Problems again* with this particular design we will have problems to deals with different combinations, for example, here we has created a _BaseOption_ class that works as an american option, and using inheritance we defined our call and put options. But if we want to create an european call/put option using this design we will have to add at least two new classes where we overrided the method _canExcercise_ and have the same logic to calculate if that option is ITM, therefore, our work here is not done, we have to come with a better design and this is the idea of this article: get a design, find the design´s problems, think how we can solve it and redesign it. In the following sections we will see specific problems and we will try to find the best to design to that particular problem.
+**Problems again** with this particular design we will have problems to deals with different combinations, for example, here we has created a __BaseOption__ class that works as an american option, and using inheritance we defined our call and put options. But if we want to create an european call/put option using this design we will have to add at least two new classes where we overrided the method __canExcercise__ and have the same logic to calculate if that option is ITM, therefore, our work here is not done, we have to come with a better design and this is the idea of this article: get a design, find the design´s problems, think how we can solve it and redesign it. In the following sections we will see specific problems and we will try to find the best to design to that particular problem.
