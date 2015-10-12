@@ -255,7 +255,7 @@ public:
 	// getters and setters
 private:
 	int _age;
-	int _name;
+	std::string _name;
 };
 
 class ComparatorStrategy {
