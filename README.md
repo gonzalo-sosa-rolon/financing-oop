@@ -285,3 +285,13 @@ people.sort(new ComparatorByNameStrategy());
 ```
 
 We have a lot of things to improve this implementation, for example, we don´t need to create a new instance of the comparator any time that we need to use it, but I just focused in show you how this pattern works in the simplest way to understand the basic concept. From these lines of code, just get the idea about what resolves the Strategy Pattern and try to think how we will use it in our option implementations.
+
+### The new option design
+
+Now that we know these design patterns, we can use them to solve our combination issue. The first thing that we have to do is think how we can split our option class in different entities, in this case, the option objects will be the face objects those will delegate some methods to different strategies. 
+
+Let us split the class Option into two new classes. We call __ExcerciseStrategy__ to the class that solves if an option could be exercised and __PayoffStrategy__ to the class that calculates the current payoff of an option.
+
+These are the implementation of these base classes:
+
+
