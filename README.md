@@ -218,11 +218,11 @@ Implementing the class *PutOption* should be easy using these classes, I will no
 
 **Problems again** with this particular design we will have problems to deals with different combinations, for example, here we has created a __BaseOption__ class that works as an american option, and using inheritance we defined our call and put options. But if we want to create an european call/put option using this design we will have to add at least two new classes where we overrided the method __canExcercise__ and have the same logic to calculate if that option is ITM, therefore, our work here is not done, we have to come with a better design and this is the idea of this article: get a design, find the design´s problems, think how we can solve it and redesign it. In the following sections we will see specific problems and we will try to find the best design to that particular problem.
 
-# A better design for options
+## A better design for options
 
 The problem that we have found in our option class implementation is that we will need to have a lot of different classes with replicated code to solve the behavior of the different option types. If we want to have european put and call options we will need to extend again from **BaseOption**, override the method __canExcersice__, and then extend again to implement a class for call options, and another class for put options. We are replicating a lot of code, we are having a class for each combination that we need, these are guidelines that show us that we didn´t really choose a good design. We will use the delegation pattern to solve this issue.
 
-## Delegation pattern
+### Delegation pattern
 
 In this pattern the face object delegates some tasks to its associated objects. It delegates the responsibility to perform that particular task to some internal object that knows how to performs it. Let me show you a pretty simple example:
 
@@ -245,7 +245,7 @@ private:
 };
 ```
 
-## Strategy Pattern
+### Strategy Pattern
 
 Strategy pattern allows us to have different behaviors selected at runtime. The easiest way to understand it is with a simple example. We have a class Person and an unsorted list of people (Person´s objects) and we want to sort this list by different attributes (name, age, lastname, etc). We can define a base class where we define our strategy interface, and then implement each child comparator:
 
