@@ -216,7 +216,7 @@ bool CallOption::getIntrinsicValue() {
 
 Implementing the class *PutOption* should be easy using these classes, I will not add that class here, but think just for a moment and the solution will come to your mind =).
 
-**Problems again** with this particular design we will have problems to deals with different combinations, for example, here we has created a __BaseOption__ class that works as an american option, and using inheritance we defined our call and put options. But if we want to create an european call/put option using this design we will have to add at least two new classes where we overrided the method __canExcercise__ and have the same logic to calculate if that option is ITM, therefore, our work here is not done, we have to come with a better design and this is the idea of this article: get a design, find the design´s problems, think how we can solve it and redesign it. In the following sections we will see specific problems and we will try to find the best to design to that particular problem.
+**Problems again** with this particular design we will have problems to deals with different combinations, for example, here we has created a __BaseOption__ class that works as an american option, and using inheritance we defined our call and put options. But if we want to create an european call/put option using this design we will have to add at least two new classes where we overrided the method __canExcercise__ and have the same logic to calculate if that option is ITM, therefore, our work here is not done, we have to come with a better design and this is the idea of this article: get a design, find the design´s problems, think how we can solve it and redesign it. In the following sections we will see specific problems and we will try to find the best design to that particular problem.
 
 # A better design for options
 
@@ -245,4 +245,43 @@ private:
 };
 ```
 
+## Strategy Pattern
 
+Strategy pattern allows us to have different behaviors selected at runtime. The easiest way to understand it is with a simple example. We have a class Person and an unsorted list of people (Person´s objects) and we want to sort this list by different attributes (name, age, lastname, etc). We can define a base class where we define our strategy interface, and then implement each child comparator:
+
+```C++
+class Person {
+public:
+	// getters and setters
+private:
+	int _age;
+	int _name;
+};
+
+class ComparatorStrategy {
+public:
+	int comparate(const Person &p1, const Person &p2) const = 0;
+};
+
+class ComparatorByNameStrategy {
+public:
+	
+	int comparate(const Person &p1, const Person &p2) const {
+		if (p1.getName() == p2.getName()) {
+			return 0;
+		} else {
+			return p1.getName() > p2.getName()? 1: -1;
+		}
+	}
+};
+```
+
+Then we decide which comparator we want to use, providing the comparator to the list sort method:
+
+```C++
+List<Person> people;
+
+people.sort(new ComparatorByNameStrategy());
+```
+
+We have a lot of things to improve this implementation, for example, we don´t need to create a new instance of the comparator any time that we need to use it, but I just focused in show you how this pattern works in the simplest way to understand the basic concept. From these lines of code, just get the idea about what resolves the Strategy Pattern and try to think how we will use it in our option implementations.
