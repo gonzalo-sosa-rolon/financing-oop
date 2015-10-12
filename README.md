@@ -276,7 +276,7 @@ public:
 };
 ```
 
-Then we decide which comparator we want to use, providing the comparator to the list sort method:
+Then we decide which comparator we want to use, providing the comparator to the list´s sort method:
 
 ```C++
 List<Person> people;
