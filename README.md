@@ -260,13 +260,13 @@ private:
 
 class ComparatorStrategy {
 public:
-	int comparate(const Person &p1, const Person &p2) const = 0;
+	int compare(const Person &p1, const Person &p2) const = 0;
 };
 
-class ComparatorByNameStrategy {
+class ComparatorByNameStrategy: public ComparatorStrategy {
 public:
 	
-	int comparate(const Person &p1, const Person &p2) const {
+	int compare(const Person &p1, const Person &p2) const {
 		if (p1.getName() == p2.getName()) {
 			return 0;
 		} else {
@@ -284,7 +284,9 @@ List<Person> people;
 people.sort(new ComparatorByNameStrategy());
 ```
 
-We have a lot of things to improve this implementation, for example, we don´t need to create a new instance of the comparator any time that we need to use it, but I just focused in show you how this pattern works in the simplest way to understand the basic concept. From these lines of code, just get the idea about what resolves the Strategy Pattern and try to think how we will use it in our option implementations.
+The sort method will use the passed comparator to compare the list´s objects. 
+
+We have a lot of things to improve this implementation, for example, we don´t need to create a new instance of the comparator any time that we need to use it, but I just focused in showing you how this pattern works in the simplest way to understand the basic concept. From these lines of code, just get the idea about what resolves the Strategy Pattern and try to think how we will use it in our option implementations.
 
 ### The new option design
 
