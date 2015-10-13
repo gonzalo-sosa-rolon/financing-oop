@@ -296,4 +296,137 @@ Let us split the class Option into two new classes. We call __ExcerciseStrategy_
 
 These are the implementation of these base classes:
 
+```C++
+class ExcerciseStrategy {
+public:
+	virtual bool canExercise(const long int &currentTime) const = 0;
 
+};
+
+class PayoffStrategy {
+public:
+	virtual float getIntrinsicValue() const = 0;
+};
+
+```
+
+And here we have some ExcerciseStrategy implementations:
+
+```C++
+class AmericanExcerciseStrategy {
+public:
+	AmericanExcerciseStrategy(const long int &maturity): _maturity(maturity) {}
+
+	virtual bool canExercise(const long int &currentTime) const {
+		return currentTime < this->_maturity;
+	}
+private:
+	const long int _maturity;
+};
+
+class EuropeanExcerciseStrategy {
+public:
+	EuropeanExcerciseStrategy(const long int &maturity): _maturity(maturity) {}
+
+	virtual bool canExercise(const long int &currentTime) const {
+		return currentTime == this->_maturity;
+	}
+private:
+	const long int _maturity;
+};
+
+class BermudaExcerciseStrategy {
+public:
+	EuropeanExcerciseStrategy(std::vector<long int> &maturities): _maturities(maturities) {}
+
+	virtual bool canExercise(const long int &currentTime) const {
+		// return true if currentTime is contained in _maturities
+	}
+private:
+	std::vector<long int> _maturities;
+};
+```
+
+Now, some payoff implementations:
+
+```C++
+class CallPayoffStrategy {
+public:
+	CallPayoffStrategy(const Stock* &stock, const float &strike): _stock(stock),
+																  _strike(strike) {}
+	virtual float getIntrinsicValue() const {
+		return this->_stock->getAsk() - this->_strike;
+	}
+private: 
+	Stock* _stock;
+	float _strike;
+};
+
+
+class PutPayoffStrategy {
+public:
+	PutPayoffStrategy(const Stock* &stock, const float &strike): _stock(stock),
+																  _strike(strike) {}
+	virtual float getIntrinsicValue() const {
+		return this->_strike - this->_stock->getAsk();
+	}
+private: 
+	Stock* _stock;
+	float _strike;
+};
+```
+
+Now, using these internal classes we created a compounend option class:
+
+```C++
+class Option: public Instrument {
+public:
+	Option(const ExcerciseStrategy* &excerciseStrategy, const PayoffStrategy* &payoffStrategy, const float strike, const Stock*& stock, const long int& maturity, const std::string &name, const float &closeValue, const float &ask, const float &bid,
+			   const float &variance, const long int &timestamp);
+
+	virtual bool isATM() const {
+		// I am comparing float points, don´t worry is just an example.
+		return this->getIntrinsicValue() == 0.0;
+	}
+
+	virtual bool isITM() const {
+		return this->getIntrinsicValue() > 0;
+	}
+
+	virtual bool isOTM() const {
+		return !this->isITM() && !this->isATM();
+	}
+
+	virtual bool getIntrinsicValue() const {
+		// delegation part
+		return this->_payoffStrategy->getIntrinsicValue();
+	}
+
+	virtual bool canExercise(const long int &currentTime) const {
+		// delegation part
+		return this->_excerciseStrategy->canExercise(currentTime);
+	}
+
+protected:
+	float _strike;
+	Stock* _stock;
+	long int _maturity;
+	ExcerciseStrategy* _excerciseStrategy;
+	PayoffStrategy* _payoffStrategy;
+};
+```
+
+And of course, a simple piece of code showing the usage:
+
+```C++
+// create an american put option
+	Option option(new AmericanExcerciseStrategy(maturity), PutPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
+	
+	// create an european call option
+	Option option(new EuropeanExcerciseStrategy(maturity), CallPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
+```
+
+#### what is worse what is better?
+
+Please, try to understand that I am showing you some design patterns, but that doesn´t mean that you have to overdesign all
+your classes. Now, we have gained extensibility and we have solved the combination issue, but our new option class is more complex and that is not always better. We can also see that creating options is more complicated as well (we will see creational patterns, don´t worry too much), therefore, we have to be extra careful when we are designing, even if we are using design patterns.
