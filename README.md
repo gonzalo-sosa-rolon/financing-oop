@@ -12,7 +12,7 @@ An object is an entity which contains data and functions. This data is contained
 
 The objects particularly are instances of classes, we define the fields and methods that the objects will have defining a class, when we instance this class and that particular instance (object) will be able to call any method defined in that class and this object will have also all the fields defined there.
 
-Let us create a pretty simple example, a class that represents market stocks:
+Let us create a pretty simple example in pseudocode, a class that represents market stocks:
 
 ```python
 
