@@ -292,12 +292,12 @@ We have a lot of things to improve this implementation, for example, we don´t n
 
 Now that we know these design patterns, we can use them to solve our combination issue. The first thing that we have to do is think how we can split our option class in different entities, in this case, the option objects will be the face objects those will delegate some methods to different strategies. 
 
-Let us split the class Option into two new classes. We call __ExcerciseStrategy__ to the class that solves if an option could be exercised and __PayoffStrategy__ to the class that calculates the current payoff of an option.
+Let us split the class Option into two new classes. We call __OptionabilityStrategy__ to the class that solves if an option could be exercised and __PayoffStrategy__ to the class that calculates the current payoff of an option.
 
 These are the implementation of these base classes:
 
 ```C++
-class ExcerciseStrategy {
+class OptionabilityStrategy {
 public:
 	virtual bool canExercise(const long int &currentTime) const = 0;
 
@@ -310,12 +310,12 @@ public:
 
 ```
 
-And here we have some ExcerciseStrategy implementations:
+And here we have some __OptionabilityStrategy__ implementations:
 
 ```C++
-class AmericanExcerciseStrategy {
+class AmericanOptionabilityStrategy : public OptionabilityStrategy {
 public:
-	AmericanExcerciseStrategy(const long int &maturity): _maturity(maturity) {}
+	AmericanOptionabilityStrategy(const long int &maturity): _maturity(maturity) {}
 
 	virtual bool canExercise(const long int &currentTime) const {
 		return currentTime < this->_maturity;
@@ -324,9 +324,9 @@ private:
 	const long int _maturity;
 };
 
-class EuropeanExcerciseStrategy {
+class EuropeanOptionabilityStrategy : public OptionabilityStrategy {
 public:
-	EuropeanExcerciseStrategy(const long int &maturity): _maturity(maturity) {}
+	EuropeanOptionabilityStrategy(const long int &maturity): _maturity(maturity) {}
 
 	virtual bool canExercise(const long int &currentTime) const {
 		return currentTime == this->_maturity;
@@ -335,9 +335,9 @@ private:
 	const long int _maturity;
 };
 
-class BermudaExcerciseStrategy {
+class BermudaOptionabilityStrategy : public OptionabilityStrategy {
 public:
-	EuropeanExcerciseStrategy(std::vector<long int> &maturities): _maturities(maturities) {}
+	BermudaOptionabilityStrategy(std::vector<long int> &maturities): _maturities(maturities) {}
 
 	virtual bool canExercise(const long int &currentTime) const {
 		// return true if currentTime is contained in _maturities
@@ -350,9 +350,9 @@ private:
 Now, some payoff implementations:
 
 ```C++
-class CallPayoffStrategy {
+class CallPayoffStrategy : public PayoffStrategy {
 public:
-	CallPayoffStrategy(const Stock* &stock, const float &strike): _stock(stock),
+	CallPayoffStrategy(const Stock* &stock, const float &strike);
 																  _strike(strike) {}
 	virtual float getIntrinsicValue() const {
 		return this->_stock->getAsk() - this->_strike;
@@ -363,9 +363,9 @@ private:
 };
 
 
-class PutPayoffStrategy {
+class PutPayoffStrategy : public PayoffStrategy {
 public:
-	PutPayoffStrategy(const Stock* &stock, const float &strike): _stock(stock),
+	PutPayoffStrategy(const Stock* &stock, const float &strike);
 																  _strike(strike) {}
 	virtual float getIntrinsicValue() const {
 		return this->_strike - this->_stock->getAsk();
@@ -381,7 +381,7 @@ Now, using these internal classes we created a compounend option class:
 ```C++
 class Option: public Instrument {
 public:
-	Option(const ExcerciseStrategy* &excerciseStrategy, const PayoffStrategy* &payoffStrategy, const float strike, const Stock*& stock, const long int& maturity, const std::string &name, const float &closeValue, const float &ask, const float &bid,
+	Option(const OptionabilityStrategy* &optionabilityStrategy, const PayoffStrategy* &payoffStrategy, const float strike, const Stock*& stock, const long int& maturity, const std::string &name, const float &closeValue, const float &ask, const float &bid,
 			   const float &variance, const long int &timestamp);
 
 	virtual bool isATM() const {
@@ -404,14 +404,14 @@ public:
 
 	virtual bool canExercise(const long int &currentTime) const {
 		// delegation part
-		return this->_excerciseStrategy->canExercise(currentTime);
+		return this->_optionabilityStrategy->canExercise(currentTime);
 	}
 
 protected:
 	float _strike;
 	Stock* _stock;
 	long int _maturity;
-	ExcerciseStrategy* _excerciseStrategy;
+	OptionabilityStrategy* _optionabilityStrategy;
 	PayoffStrategy* _payoffStrategy;
 };
 ```
@@ -420,10 +420,10 @@ And of course, a simple piece of code showing the usage:
 
 ```C++
 // create an american put option
-	Option option(new AmericanExcerciseStrategy(maturity), PutPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
+	Option option(new AmericanOptionabilityStrategy(maturity), PutPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
 	
 	// create an european call option
-	Option option(new EuropeanExcerciseStrategy(maturity), CallPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
+	Option option(new EuropeanOptionabilityStrategy(maturity), CallPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
 ```
 
 #### what is worse what is better?
