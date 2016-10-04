@@ -430,3 +430,19 @@ And of course, a simple piece of code showing the usage:
 
 Please, try to understand that I am showing you some design patterns, but that doesn´t mean that you have to overdesign all
 your classes. Now, we have gained extensibility and we have solved the combination issue, but our new option class is more complex and that is not always better. We can also see that creating options is more complicated as well (we will see creational patterns, don´t worry too much), therefore, we have to be extra careful when we are designing, even if we are using design patterns.
+
+
+## Creating options
+
+Please, let me remind you the line of code that we just used to create a simple American Put Option:
+
+```C++
+// create an american put option
+	Option option(new AmericanOptionabilityStrategy(maturity), PutPayoffStrategy(stock, strike), strike, stock, maturity, variance, timestamp);
+```
+
+That code looks bad (and sad), there we have a lot of parameters with specific orders that we have to remember, we have a big chance of missing one of them (compilation time error), or even worse, setting them in a wrong order (runtime error).
+
+We will help us with the Builder pattern to create a better library.
+
+### Builder Pattern
